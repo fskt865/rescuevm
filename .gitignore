@@ -1,0 +1,13 @@
+# Serial logs capture guest console output, which can include filenames and
+# device identifiers from a customer disk. Local only.
+logs/
+
+# Disk images of any kind. Never from a real customer device.
+*.qcow2
+*.img
+*.raw
+*.dd
+
+# Generated per-run. The private key lives in ~\.ssh, deliberately outside
+# this repo, so it cannot be committed by accident.
+payload/authorized_keys
