@@ -1,13 +1,19 @@
-# Serial logs capture guest console output, which can include filenames and
-# device identifiers from a customer disk. Local only.
+# Session and serial logs capture guest console output, which can include
+# filenames and device identifiers from a customer disk. Local only.
 logs/
+sessions/
 
-# Disk images of any kind. Never from a real customer device.
+# Extracted kernel and initramfs (~190 MB, regenerable from the ISO).
+boot/
+
+# Persistence overlay and any disk image. Never from a real customer device.
+overlay/
 *.qcow2
 *.img
 *.raw
 *.dd
 
-# Generated per-run. The private key lives in ~\.ssh, deliberately outside
-# this repo, so it cannot be committed by accident.
+# Generated per run. The private key lives in ~\.ssh, deliberately outside this
+# repo, so it cannot be committed by accident.
 payload/authorized_keys
+payload/autorun0
