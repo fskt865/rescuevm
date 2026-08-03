@@ -43,7 +43,13 @@ With a destination image for `ddrescue` output:
 
 Once the guest is up, type this in the QEMU window (one line, once per boot):
 
-    mount /dev/vdb1 /mnt || mount /dev/vdb /mnt; sh /mnt/setup.sh
+    K=/dev/disk/by-id/virtio-key; mount ${K}-part1 /mnt 2>/dev/null || mount $K /mnt; sh /mnt/setup.sh
+
+**Never address disks as `/dev/vdX` here.** Drive order decides those letters,
+so adding or removing a drive silently repoints them - and the disk next to the
+key payload is the customer's. Both virtio drives carry a `serial=`, so use the
+stable names: the key payload is `virtio-key`, the customer disk is
+`virtio-source`.
 
 Then from Windows:
 

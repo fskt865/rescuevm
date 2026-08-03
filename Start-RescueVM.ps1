@@ -227,13 +227,18 @@ $qemuArgs = @(
     # restrict=on: guest reaches nothing but the forwarded port. Not a LAN.
     '-nic',     "user,restrict=on,hostfwd=tcp::${SshPort}-:22",
     # Read-only vvfat carries the pubkey and setup script into the live ISO.
-    '-drive',   "file=fat:ro:$PayloadDir,format=raw,if=virtio",
+    # serial= gives it a stable /dev/disk/by-id name. Never mount by vdX:
+    # drive order decides those, so a reordering points you at the customer
+    # disk instead. No format= here - the fat: prefix selects the vvfat driver.
+    '-drive',   "file=fat:ro:$PayloadDir,if=virtio,serial=key",
     '-serial',  "file:$serialLog",
     '-display', 'gtk'
 )
 
 if ($target) {
-    $srcOpts = "file=\\.\PhysicalDrive$($target.Number),format=raw,if=virtio"
+    # serial=source -> /dev/disk/by-id/virtio-source in the guest. Address the
+    # customer disk by that name, never by vdX.
+    $srcOpts = "file=\\.\PhysicalDrive$($target.Number),format=raw,if=virtio,serial=source"
     if ($AllowSourceWrites) {
         Write-Warning 'SOURCE DISK IS WRITABLE. The guest can modify customer media.'
     } else {
@@ -323,8 +328,13 @@ try {
 
     Write-Host ''
     Write-Host 'Starting QEMU. In the guest window, type:' -ForegroundColor Yellow
-    Write-Host '  mount /dev/vdb1 /mnt || mount /dev/vdb /mnt; sh /mnt/setup.sh'
+    Write-Host '  K=/dev/disk/by-id/virtio-key; mount ${K}-part1 /mnt 2>/dev/null || mount $K /mnt; sh /mnt/setup.sh'
     Write-Host ''
+    if ($target) {
+        Write-Host 'The customer disk is /dev/disk/by-id/virtio-source' -ForegroundColor Yellow
+        Write-Host 'Address it by that name. Do not guess at /dev/vdX.'
+        Write-Host ''
+    }
     Write-Host 'Then from Windows:' -ForegroundColor Yellow
     Write-Host "  ssh -i `"$KeyPath`" -p $SshPort -o StrictHostKeyChecking=no -o UserKnownHostsFile=NUL root@127.0.0.1"
     Write-Host ''
